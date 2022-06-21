@@ -6,13 +6,11 @@ from psycopg2 import Error
 
 
 class User(BaseModel):
-    """Validate request data."""
     name: str
     email: str
     phone: str = None
 
 class Pass(BaseModel):
-    """Validate request data."""
     beauty_title: str
     title: str
     other_titles: str = None
@@ -26,14 +24,12 @@ class Pass(BaseModel):
     latitude: float
     longitude: float
     height: int
-    user_id: int
 
 
 class Image(BaseModel):
     title: str
     image_file: bytes
     data_added: datetime
-    pass_id: int
 
 
 class AddPass(BaseModel):
@@ -43,7 +39,7 @@ class AddPass(BaseModel):
 
     def add_pass(self):
         try:
-            # Подключиться к существующей базе данных
+            # Подключиться к базе данных
             connection = psycopg2.connect(user="postgres",
                                           # пароль, который указали при установке PostgreSQL
                                           password="cyrkrobo",
@@ -51,18 +47,38 @@ class AddPass(BaseModel):
                                           port="5432",
                                           database="postgres")
 
-            # Создайте курсор для выполнения операций с базой данных
+            # Создать курсор для выполнения операций с базой данных
             cursor = connection.cursor()
-            # SQL-запрос для вставки данных
-            insert_user_data = "INSERT INTO users (name, email, phone) VALUES (%s, %s, %s);"
+            # Проверка, если ли юзер в базе данных
+            cursor.execute("SELECT id FROM users WHERE email=%s", (self.user.email,))
+            user_id = cursor.fetchone()
 
-            # Выполнение команды: это вставит данные в таблицу
-            cursor.execute(insert_user_data, (self.user.name, self.user.email, self.user.phone))
-            connection.commit()
-            print(self.user.name)
-            print(self.user.email)
-            print(self.user.phone)
-            print("Данные успешно добавлены в PostgreSQL")
+            if user_id == None:
+                # Вставить данные в таблицу Users
+                insert_user_data = "INSERT INTO users (name, email, phone) VALUES (%s, %s, %s) RETURNING id;"
+                cursor.execute(insert_user_data, (self.user.name, self.user.email, self.user.phone))
+                # Получить id юзера
+                user_id = cursor.fetchone()
+
+            # Вставить данные в таблицу Passes
+            insert_pass_data = '''INSERT INTO passes (beauty_title, title, other_titles, title_connect, data_added,
+                                status, level_winter, level_spring, level_summer, level_autumn, latitude, longitude,
+                                height, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;'''
+            cursor.execute(insert_pass_data, (self.passes.beauty_title, self.passes.title, self.passes.other_titles,
+                                              self.passes.title_connect, self.passes.data_added, self.passes. status,
+                                              self.passes.level_winter, self.passes.level_spring, self.passes.level_summer,
+                                              self.passes.level_autumn, self.passes.latitude, self.passes.longitude,
+                                              self.passes.height, user_id))
+
+            # Получить id перевала
+            pass_id = cursor.fetchone()
+
+            # Вставить данные в таблицу Images
+            for image in self.images:
+                insert_image_data = "INSERT INTO images (title, image_file, data_added, pass_id) VALUES (%s, %s, %s, %s);"
+                cursor.execute(insert_image_data, (image.title, image.image_file, image.data_added, pass_id))
+                connection.commit()
+                print("Данные успешно добавлены в PostgreSQL")
 
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
