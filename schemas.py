@@ -1,8 +1,18 @@
+import os
+from dotenv import load_dotenv
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List
+from typing import List, Union
 import psycopg2
 from psycopg2 import Error
+
+load_dotenv()
+
+FSTR_DB_LOGIN = os.getenv('FSTR_DB_LOGIN')
+FSTR_DB_PASS = os.getenv('FSTR_DB_PASS')
+FSTR_DB_HOST = os.getenv('FSTR_DB_HOST')
+FSTR_DB_PORT = os.getenv('FSTR_DB_PORT')
+FSTR_DB_NAME = os.getenv('FSTR_DB_NAME')
 
 
 class User(BaseModel):
@@ -16,7 +26,6 @@ class Pass(BaseModel):
     other_titles: str = None
     title_connect: str = None
     data_added: datetime
-    status: str = 'new'
     level_winter: str = None
     level_spring: str = None
     level_summer: str = None
@@ -28,7 +37,7 @@ class Pass(BaseModel):
 
 class Image(BaseModel):
     title: str
-    image_file: bytes
+    url_path: str
     data_added: datetime
 
 
@@ -40,12 +49,11 @@ class AddPass(BaseModel):
     def add_pass(self):
         try:
             # Подключиться к базе данных
-            connection = psycopg2.connect(user="postgres",
-                                          # пароль, который указали при установке PostgreSQL
-                                          password="cyrkrobo",
-                                          host="127.0.0.1",
-                                          port="5432",
-                                          database="postgres")
+            connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+                                          password=FSTR_DB_PASS,
+                                          host=FSTR_DB_HOST,
+                                          port=FSTR_DB_PORT,
+                                          database=FSTR_DB_NAME)
 
             # Создать курсор для выполнения операций с базой данных
             cursor = connection.cursor()
@@ -65,7 +73,7 @@ class AddPass(BaseModel):
                                 status, level_winter, level_spring, level_summer, level_autumn, latitude, longitude,
                                 height, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;'''
             cursor.execute(insert_pass_data, (self.passes.beauty_title, self.passes.title, self.passes.other_titles,
-                                              self.passes.title_connect, self.passes.data_added, self.passes. status,
+                                              self.passes.title_connect, self.passes.data_added, 'new',
                                               self.passes.level_winter, self.passes.level_spring, self.passes.level_summer,
                                               self.passes.level_autumn, self.passes.latitude, self.passes.longitude,
                                               self.passes.height, user_id))
@@ -75,10 +83,13 @@ class AddPass(BaseModel):
 
             # Вставить данные в таблицу Images
             for image in self.images:
-                insert_image_data = "INSERT INTO images (title, image_file, data_added, pass_id) VALUES (%s, %s, %s, %s);"
-                cursor.execute(insert_image_data, (image.title, image.image_file, image.data_added, pass_id))
-                connection.commit()
-                print("Данные успешно добавлены в PostgreSQL")
+                insert_image_data = "INSERT INTO images (title, url_path, data_added, pass_id) VALUES (%s, %s, %s, %s);"
+                cursor.execute(insert_image_data, (image.title, image.url_path, image.data_added, pass_id))
+
+            connection.commit()
+            print("Данные успешно добавлены в PostgreSQL")
+
+            return pass_id[0]
 
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
@@ -87,3 +98,8 @@ class AddPass(BaseModel):
                 cursor.close()
                 connection.close()
                 print("Соединение с PostgreSQL закрыто")
+
+class Response(BaseModel):
+    status: int
+    message: str
+    id: Union[int, None]

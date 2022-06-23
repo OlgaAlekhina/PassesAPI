@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.users
 (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    email TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
     phone TEXT NOT NULL,
     data_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.passes
     other_titles TEXT,
     title_connect TEXT,
     data_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status in ('new', 'pending', 'accepted', 'rejected')),
     level_winter TEXT,
     level_spring TEXT,
     level_summer TEXT,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.images
 (
     id BIGSERIAL PRIMARY KEY,
     title TEXT NOT NULL,
-    image_file BYTEA NOT NULL,
+    url_path TEXT NOT NULL,
     data_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     pass_id BIGINT REFERENCES passes(id)
 );
