@@ -67,19 +67,18 @@ class AddPass(BaseModel):
 
                 # Вставить данные в таблицу Passes
                 insert_pass_data = '''INSERT INTO passes (beauty_title, title, other_titles, title_connect, data_added,
-                                            status, level_winter, level_spring, level_summer, level_autumn, latitude, longitude,
-                                            height, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;'''
+                                    status, level_winter, level_spring, level_summer, level_autumn, latitude, longitude,
+                                    height, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;'''
                 cursor.execute(insert_pass_data, (self.passes.beauty_title, self.passes.title, self.passes.other_titles,
                                                   self.passes.title_connect, self.passes.data_added, 'new',
-                                                  self.passes.level_winter, self.passes.level_spring,
-                                                  self.passes.level_summer,
+                                                  self.passes.level_winter, self.passes.level_spring, self.passes.level_summer,
                                                   self.passes.level_autumn, self.passes.latitude, self.passes.longitude,
                                                   self.passes.height, user_id))
 
                 # Получить id перевала
                 pass_id = cursor.fetchone()
 
-                # Вставить данные в таблицу Images
+                #Вставить данные в таблицу Images
                 for image in self.images:
                     insert_image_data = "INSERT INTO images (title, url_path, data_added, pass_id) VALUES (%s, %s, %s, %s);"
                     cursor.execute(insert_image_data, (image.title, image.url_path, image.data_added, pass_id))
@@ -94,3 +93,39 @@ class Response(BaseModel):
     status: int
     message: str
     id: Union[int, None]
+
+
+class PassDetails(BaseModel):
+    beauty_title: str
+    title: str
+    other_titles: str
+    title_connect: str
+    data_added: datetime
+    status: str
+    level_winter: str
+    level_spring: str
+    level_summer: str
+    level_autumn: str
+    latitude: float
+    longitude: float
+    height: int
+
+
+def get_pass(pass_id):
+    connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+                                  password=FSTR_DB_PASS,
+                                  host=FSTR_DB_HOST,
+                                  port=FSTR_DB_PORT,
+                                  database=FSTR_DB_NAME)
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM passes WHERE id=%s", (pass_id,))
+            columns = [column[0] for column in cursor.description]
+            pass_data = cursor.fetchone()
+            pass_data = dict(zip(columns, pass_data))
+            return pass_data
+
+    connection.close()
+    
+
+

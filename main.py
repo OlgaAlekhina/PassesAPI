@@ -3,8 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from collections import defaultdict
-import schemas
-from schemas import Response
+from schemas import Response, AddPass, PassDetails, get_pass
 
 
 app = FastAPI()
@@ -24,10 +23,15 @@ async def validation_exception_handler(request, exc):
         ),
     )
 
-@app.post("/pass", response_model = Response)
-def submitData(passes: schemas.AddPass):
+@app.post("/addpass", response_model = Response)
+def submitData(passes: AddPass):
     try:
         return Response(status=200, message="Отправлено успешно", id=passes.add_pass())
 
     except:
         return Response(status=500, message="Ошибка подключения к базе данных")
+
+
+@app.get("/passes/{pass_id}", response_model=PassDetails)
+def get_pass_by_id(pass_id: int):
+    return get_pass(pass_id)
