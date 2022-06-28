@@ -95,22 +95,6 @@ class Response(BaseModel):
     id: Union[int, None]
 
 
-class PassDetails(BaseModel):
-    beauty_title: str
-    title: str
-    other_titles: str
-    title_connect: str
-    data_added: datetime
-    status: str
-    level_winter: str
-    level_spring: str
-    level_summer: str
-    level_autumn: str
-    latitude: float
-    longitude: float
-    height: int
-
-
 def get_pass(pass_id):
     connection = psycopg2.connect(user=FSTR_DB_LOGIN,
                                   password=FSTR_DB_PASS,
@@ -119,11 +103,28 @@ def get_pass(pass_id):
                                   database=FSTR_DB_NAME)
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM passes WHERE id=%s", (pass_id,))
+            cursor.execute('''SELECT beauty_title, title, other_titles, title_connect, data_added, level_winter,
+            level_spring, level_summer, level_autumn, latitude, longitude, height FROM passes WHERE id=%s''', (pass_id,))
             columns = [column[0] for column in cursor.description]
             pass_data = cursor.fetchone()
             pass_data = dict(zip(columns, pass_data))
-            return pass_data
+            print(pass_data)
+            cursor.execute('''SELECT users.name, users.email, users.phone FROM users, passes WHERE 
+            passes.user_id=users.id AND passes.id=%s''', (pass_id,))
+            columns = [column[0] for column in cursor.description]
+            user_data = cursor.fetchone()
+            user_data = dict(zip(columns, user_data))
+            print(user_data)
+            cursor.execute('''SELECT images.title, images.url_path, images.data_added FROM images, passes WHERE 
+            images.pass_id=passes.id AND passes.id=%s''', (pass_id,))
+            columns = [column[0] for column in cursor.description]
+            rows = cursor.fetchall()
+            image_data = []
+            for row in rows:
+                image_dict = dict(zip(columns, row))
+                image_data.append(image_dict)
+
+            return {"user" : user_data, "passes": pass_data, "images": image_data}
 
     connection.close()
     

@@ -32,6 +32,11 @@ def submitData(passes: AddPass):
         return Response(status=500, message="Ошибка подключения к базе данных")
 
 
-@app.get("/passes/{pass_id}", response_model=PassDetails)
+@app.get("/passes/{pass_id}", response_model=AddPass)
 def get_pass_by_id(pass_id: int):
     return get_pass(pass_id)
+
+
+# @app.patch("/update/{pass_id}")
+# def update_pass_by_id(pass_id: int, passes: AddPass):
+#     return 2#update_pass(pass_id)
