@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from collections import defaultdict
-from schemas import Response, AddPass, PassDetails, get_pass
+from schemas import Response, AddPass, get_pass
 
 
 app = FastAPI()
