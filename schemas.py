@@ -88,6 +88,15 @@ class AddPass(BaseModel):
 
         return pass_id[0]
 
+    # def update_pass(self, pass_id):
+    #     connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+    #                                   password=FSTR_DB_PASS,
+    #                                   host=FSTR_DB_HOST,
+    #                                   port=FSTR_DB_PORT,
+    #                                   database=FSTR_DB_NAME)
+    #     with connection:
+    #         with connection.cursor() as cursor:
+
 
 class Response(BaseModel):
     status: int
