@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from collections import defaultdict
-from schemas import Response, AddPass, get_pass #update_pass
+from schemas import Response, AddPass, get_pass, PatchPass  #update_pass
 
 
 app = FastAPI()
@@ -37,14 +37,15 @@ def get_pass_by_id(pass_id: int):
     return get_pass(pass_id)
 
 
-@app.patch("/update/{pass_id}")
-def update_pass_by_id(pass_id: int, passes: AddPass):
+@app.patch("/update/{pass_id}", response_model=PatchPass)
+def update_pass_by_id(pass_id: int, passes: PatchPass):
     stored_data = get_pass(pass_id)
+    print(stored_data)
     stored_model = AddPass(**stored_data)
     print(stored_model)
     update_data = passes.dict(exclude_unset=True)
     print(update_data)
-    updated_pass = stored_model.copy(update=update_data, deep=True)
+    updated_pass = stored_model.copy(update=update_data)
     print(updated_pass)
     #updated_pass.update_pass(pass_id)
-    return update_data
+    return updated_pass

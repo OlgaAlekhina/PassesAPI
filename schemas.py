@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Union
+from typing import List, Union, Optional
 import psycopg2
 
 
@@ -88,15 +88,6 @@ class AddPass(BaseModel):
 
         return pass_id[0]
 
-    # def update_pass(self, pass_id):
-    #     connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-    #                                   password=FSTR_DB_PASS,
-    #                                   host=FSTR_DB_HOST,
-    #                                   port=FSTR_DB_PORT,
-    #                                   database=FSTR_DB_NAME)
-    #     with connection:
-    #         with connection.cursor() as cursor:
-
 
 class Response(BaseModel):
     status: int
@@ -117,13 +108,11 @@ def get_pass(pass_id):
             columns = [column[0] for column in cursor.description]
             pass_data = cursor.fetchone()
             pass_data = dict(zip(columns, pass_data))
-            print(pass_data)
             cursor.execute('''SELECT users.name, users.email, users.phone FROM users, passes WHERE 
             passes.user_id=users.id AND passes.id=%s''', (pass_id,))
             columns = [column[0] for column in cursor.description]
             user_data = cursor.fetchone()
             user_data = dict(zip(columns, user_data))
-            print(user_data)
             cursor.execute('''SELECT images.title, images.url_path, images.data_added FROM images, passes WHERE 
             images.pass_id=passes.id AND passes.id=%s''', (pass_id,))
             columns = [column[0] for column in cursor.description]
@@ -136,6 +125,42 @@ def get_pass(pass_id):
             return {"user" : user_data, "passes": pass_data, "images": image_data}
 
     connection.close()
-    
+
+
+class UserOptional(User):
+    __annotations__ = {k: Optional[v] for k, v in User.__annotations__.items()}
+
+
+class PassOptional(Pass):
+    __annotations__ = {k: Optional[v] for k, v in Pass.__annotations__.items()}
+
+
+class ImageOptional(Image):
+    __annotations__ = {k: Optional[v] for k, v in Image.__annotations__.items()}
+
+
+class PatchPass(BaseModel):
+    user: UserOptional
+    passes: PassOptional
+    images: List[ImageOptional]
+#
+#     def update_pass(self, pass_id):
+#         connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+#                                       password=FSTR_DB_PASS,
+#                                       host=FSTR_DB_HOST,
+#                                       port=FSTR_DB_PORT,
+#                                       database=FSTR_DB_NAME)
+#         with connection:
+#             with connection.cursor() as cursor:
+#                 cursor.execute('''UPDATE passes SET beauty_title=%s, title=%s, other_titles=%s, title_connect=%s,
+#                                 data_added=%s, level_winter=%s, level_spring=%s, level_summer=%s,
+#                                 level_autumn=%s, latitude=%s, longitude=%s, height=%s WHERE passes.id=%s''', (self.passes.beauty_title,
+#                                 self.passes.title, self.passes.other_titles, self.passes.title_connect, self.passes.data_added,
+#                                 self.passes.level_winter, self.passes.level_spring, self.passes.level_summer, self.passes.level_autumn,
+#                                 self.passes.latitude, self.passes.longitude, self.passes.height, pass_id,))
+#
+#                 for image in self.images:
+#                     cursor.execute('''UPDATE images SET title=%s, url_path=%s, data_added=%s WHERE images.pass_id=passes.id
+#                                     AND passes.id=%s''', (image.title, image.url_path, image.data_added, pass_id))
 
 
