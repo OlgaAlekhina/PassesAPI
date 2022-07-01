@@ -43,10 +43,48 @@ API реализует следующие методы:
 метод принимает id перевала
   
 возвращает все данные о перевале в словаре вида:
+"user": {
+    "name": "Olga",
+    "email": "olga@mail.ru",
+    "phone": "555-55-55"
+  },
+  "passes": {
+    "beauty_title": "best",
+    "title": "OlgaPass",
+    "other_titles": "small",
+    "title_connect": "and",
+    "data_added": "2022-07-01T20:13:25.416Z",
+    "level_winter": "hard",
+    "level_spring": "semi-hard",
+    "level_summer": "easy",
+    "level_autumn": "semi-hard",
+    "latitude": 268,
+    "longitude":57,
+    "height": 2000
+  },
+  "images": [
+    {
+      "title": "pic1",
+      "url_path": "mysite.ru/pic1",
+      "data_added": "2022-07-01T20:13:25.416Z"
+    },
+{
+      "title": "pic2",
+      "url_path": "mysite.ru/pic2",
+      "data_added": "2022-07-01T20:13:25.416Z"
+    }
+  ]
+}'
   
 3. PATCH/update/<pass_id>  для частичного редактирования данных о перевале по его id
 
 метод принимает id перевала и словарь с новыми данными вида:
+{
+    "title": "NewTitle",
+    "level_winter": "not so hard",
+    "level_autumn": "quite easy",
+    "height": 3000
+  }
 
 возвращает {"state" : int, "message" : "str"}, где state = 1 при удачной операции, 0 при неудачной операции, message - причина ошибки
 
@@ -55,3 +93,31 @@ API реализует следующие методы:
 принимает email пользователя
 
 возвращает список данных обо всех перевалах пользователя вида:
+[{
+    "beauty_title": "best",
+    "title": "OlgaPass",
+    "other_titles": "small",
+    "title_connect": "and",
+    "data_added": "2022-07-01T20:13:25.416Z",
+    "level_winter": "hard",
+    "level_spring": "semi-hard",
+    "level_summer": "easy",
+    "level_autumn": "semi-hard",
+    "latitude": 268,
+    "longitude":57,
+    "height": 2000
+  },
+  {
+    "beauty_title": "worst",
+    "title": "Pass",
+    "other_titles": "ever",
+    "title_connect": "-",
+    "data_added": "2022-07-01T20:21:54.416Z",
+    "level_winter": "so-so",
+    "level_spring": "easy",
+    "level_summer": "easy",
+    "level_autumn": "hard and dirty",
+    "latitude": 578,
+    "longitude":89,
+    "height": 1500
+  }]
