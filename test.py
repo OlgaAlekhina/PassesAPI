@@ -67,5 +67,7 @@ for obj in t.images:
 #print(t.copy(update={'user': t.user.copy(update=u.get('user')), 'passes': t.passes.copy(update=u.get('passes')), 'images': list(tu.copy(update=images[0]) for tu in t.images)}))
 
 print(t.copy(update={'user': t.user.copy(update=u.get('user')), 'passes': t.passes.copy(update=u.get('passes')), 'images': list(tu.copy(update=dict) for tu in t.images for dict in images)[:len()]}))
-
+t.copy(update={'passes': t.passes.copy(update=u.get('passes'))})
 #print(u.get('images'))
+
+

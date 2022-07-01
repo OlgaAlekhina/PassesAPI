@@ -95,6 +95,27 @@ class Response(BaseModel):
     id: Union[int, None]
 
 
+def pass_details(pass_id):
+    connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+                                  password=FSTR_DB_PASS,
+                                  host=FSTR_DB_HOST,
+                                  port=FSTR_DB_PORT,
+                                  database=FSTR_DB_NAME)
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute('''SELECT beauty_title, title, other_titles, title_connect, data_added, status, level_winter,
+                level_spring, level_summer, level_autumn, latitude, longitude, height FROM passes WHERE id=%s''',
+                           (pass_id,))
+            columns = [column[0] for column in cursor.description]
+            pass_data = cursor.fetchone()
+            pass_data = dict(zip(columns, pass_data))
+
+    connection.close()
+
+    return pass_data
+
+
+
 def get_pass(pass_id):
     connection = psycopg2.connect(user=FSTR_DB_LOGIN,
                                   password=FSTR_DB_PASS,
@@ -103,11 +124,6 @@ def get_pass(pass_id):
                                   database=FSTR_DB_NAME)
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute('''SELECT beauty_title, title, other_titles, title_connect, data_added, level_winter,
-            level_spring, level_summer, level_autumn, latitude, longitude, height FROM passes WHERE id=%s''', (pass_id,))
-            columns = [column[0] for column in cursor.description]
-            pass_data = cursor.fetchone()
-            pass_data = dict(zip(columns, pass_data))
             cursor.execute('''SELECT users.name, users.email, users.phone FROM users, passes WHERE 
             passes.user_id=users.id AND passes.id=%s''', (pass_id,))
             columns = [column[0] for column in cursor.description]
@@ -122,45 +138,67 @@ def get_pass(pass_id):
                 image_dict = dict(zip(columns, row))
                 image_data.append(image_dict)
 
-            return {"user" : user_data, "passes": pass_data, "images": image_data}
-
     connection.close()
+    print("Данные успешно извлечены. Соединение с базой данных закрыто")
 
-
-class UserOptional(User):
-    __annotations__ = {k: Optional[v] for k, v in User.__annotations__.items()}
+    return {"user": user_data, "passes": pass_details(pass_id), "images": image_data}
 
 
 class PassOptional(Pass):
     __annotations__ = {k: Optional[v] for k, v in Pass.__annotations__.items()}
 
+    def update_pass(self, pass_id):
+        connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+                                      password=FSTR_DB_PASS,
+                                      host=FSTR_DB_HOST,
+                                      port=FSTR_DB_PORT,
+                                      database=FSTR_DB_NAME)
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute('''UPDATE passes SET beauty_title=%s, title=%s, other_titles=%s, title_connect=%s,
+                                data_added=%s, level_winter=%s, level_spring=%s, level_summer=%s,
+                                level_autumn=%s, latitude=%s, longitude=%s, height=%s WHERE passes.id=%s''', (self.beauty_title,
+                                self.title, self.other_titles, self.title_connect, self.data_added,
+                                self.level_winter, self.level_spring, self.level_summer, self.level_autumn,
+                                self.latitude, self.longitude, self.height, pass_id,))
 
-class ImageOptional(Image):
-    __annotations__ = {k: Optional[v] for k, v in Image.__annotations__.items()}
+        connection.close()
+        print("Данные успешно переданы. Соединение с базой данных закрыто")
 
 
-class PatchPass(BaseModel):
-    user: UserOptional
-    passes: PassOptional
-    images: List[ImageOptional]
-#
-#     def update_pass(self, pass_id):
-#         connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-#                                       password=FSTR_DB_PASS,
-#                                       host=FSTR_DB_HOST,
-#                                       port=FSTR_DB_PORT,
-#                                       database=FSTR_DB_NAME)
-#         with connection:
-#             with connection.cursor() as cursor:
-#                 cursor.execute('''UPDATE passes SET beauty_title=%s, title=%s, other_titles=%s, title_connect=%s,
-#                                 data_added=%s, level_winter=%s, level_spring=%s, level_summer=%s,
-#                                 level_autumn=%s, latitude=%s, longitude=%s, height=%s WHERE passes.id=%s''', (self.passes.beauty_title,
-#                                 self.passes.title, self.passes.other_titles, self.passes.title_connect, self.passes.data_added,
-#                                 self.passes.level_winter, self.passes.level_spring, self.passes.level_summer, self.passes.level_autumn,
-#                                 self.passes.latitude, self.passes.longitude, self.passes.height, pass_id,))
-#
-#                 for image in self.images:
-#                     cursor.execute('''UPDATE images SET title=%s, url_path=%s, data_added=%s WHERE images.pass_id=passes.id
-#                                     AND passes.id=%s''', (image.title, image.url_path, image.data_added, pass_id))
+class ResponseUpdate(BaseModel):
+    state: int
+    message: str
+
+
+def get_user_passes(user_email):
+    connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+                                  password=FSTR_DB_PASS,
+                                  host=FSTR_DB_HOST,
+                                  port=FSTR_DB_PORT,
+                                  database=FSTR_DB_NAME)
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute('''SELECT passes.beauty_title, passes.title, passes.other_titles, passes.title_connect, 
+                passes.data_added, passes.level_winter, passes.level_spring, passes.level_summer, passes.level_autumn, 
+                passes.latitude, passes.longitude, passes.height FROM passes, users WHERE 
+                passes.user_id=users.id AND users.email=%s''', (user_email,))
+            columns = [column[0] for column in cursor.description]
+            rows = cursor.fetchall()
+            passes_data = []
+            for row in rows:
+                passes_dict = dict(zip(columns, row))
+                passes_data.append(passes_dict)
+
+    connection.close()
+    print("Данные успешно извлечены. Соединение с базой данных закрыто")
+
+    return passes_data
+
+
+
+
+
+
 
 

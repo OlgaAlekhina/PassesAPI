@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from collections import defaultdict
-from schemas import Response, AddPass, get_pass, PatchPass  #update_pass
+from schemas import Response, AddPass, get_pass, Pass, PassOptional, pass_details, ResponseUpdate, get_user_passes
 
 
 app = FastAPI()
@@ -37,15 +37,19 @@ def get_pass_by_id(pass_id: int):
     return get_pass(pass_id)
 
 
-@app.patch("/update/{pass_id}", response_model=PatchPass)
-def update_pass_by_id(pass_id: int, passes: PatchPass):
-    stored_data = get_pass(pass_id)
-    print(stored_data)
-    stored_model = AddPass(**stored_data)
-    print(stored_model)
-    update_data = passes.dict(exclude_unset=True)
-    print(update_data)
-    updated_pass = stored_model.copy(update=update_data)
-    print(updated_pass)
-    #updated_pass.update_pass(pass_id)
-    return updated_pass
+@app.patch("/update/{pass_id}", response_model=ResponseUpdate)
+def update_pass_by_id(pass_id: int, passes: PassOptional):
+    stored_data = pass_details(pass_id)
+    if stored_data.get("status") == "new":
+        stored_model = PassOptional(**stored_data)
+        update_data = passes.dict(exclude_unset=True)
+        updated_pass = stored_model.copy(update=update_data)
+        updated_pass.update_pass(pass_id)
+        return ResponseUpdate(state=1, message="Успешное обновление")
+    else:
+        return ResponseUpdate(state=0, message="Нельзя редактировать эту запись")
+
+
+@app.get("/passes/users/{user_email}")
+def get_passes_by_email(user_email: str):
+    return get_user_passes(user_email)
