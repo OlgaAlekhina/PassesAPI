@@ -7,6 +7,34 @@ API реализует следующие методы:
 1. POST/addpass  для добавления нового перевала в базу данных
 
 метод принимает JSON данные вида:
+{
+  "user": {
+    "name": "string",
+    "email": "string",
+    "phone": "string"
+  },
+  "passes": {
+    "beauty_title": "string",
+    "title": "string",
+    "other_titles": "string",
+    "title_connect": "string",
+    "data_added": "2022-07-01T19:53:29.691Z",
+    "level_winter": "string",
+    "level_spring": "string",
+    "level_summer": "string",
+    "level_autumn": "string",
+    "latitude": 0,
+    "longitude": 0,
+    "height": 0
+  },
+  "images": [
+    {
+      "title": "string",
+      "url_path": "string",
+      "data_added": "2022-07-01T19:53:29.691Z"
+    }
+  ]
+}
 
 возвращает {"status" : int, "message" : "str", "id" : int}, где status - HTTP код ответа сервера, message - результат операции, id - id созданного перевала
 
