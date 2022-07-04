@@ -39,15 +39,18 @@ def get_pass_by_id(pass_id: int):
 
 @app.patch("/update/{pass_id}", response_model=ResponseUpdate)
 def update_pass_by_id(pass_id: int, passes: PassOptional):
-    stored_data = pass_details(pass_id)
-    if stored_data.get("status") == "new":
-        stored_model = PassOptional(**stored_data)
-        update_data = passes.dict(exclude_unset=True)
-        updated_pass = stored_model.copy(update=update_data)
-        updated_pass.update_pass(pass_id)
-        return ResponseUpdate(state=1, message="Успешное обновление")
-    else:
-        return ResponseUpdate(state=0, message="Нельзя редактировать эту запись")
+    try:
+        stored_data = pass_details(pass_id)
+        if stored_data.get("status") == "new":
+            stored_model = PassOptional(**stored_data)
+            update_data = passes.dict(exclude_unset=True)
+            updated_pass = stored_model.copy(update=update_data)
+            updated_pass.update_pass(pass_id)
+            return ResponseUpdate(state=1, message="Успешное обновление")
+        else:
+            return ResponseUpdate(state=0, message="Нельзя редактировать эту запись")
+    except:
+        return ResponseUpdate(state=0, message="Ошибка подключения к базе данных")
 
 
 @app.get("/passes/users/{user_email}")
