@@ -15,6 +15,15 @@ FSTR_DB_PORT = os.getenv('FSTR_DB_PORT')
 FSTR_DB_NAME = os.getenv('FSTR_DB_NAME')
 
 
+def connect_db():
+    db_connection = psycopg2.connect(user=FSTR_DB_LOGIN,
+                                      password=FSTR_DB_PASS,
+                                      host=FSTR_DB_HOST,
+                                      port=FSTR_DB_PORT,
+                                      database=FSTR_DB_NAME)
+    return db_connection
+
+
 class User(BaseModel):
     name: str
     email: str
@@ -47,11 +56,9 @@ class AddPass(BaseModel):
     images: List[Image]
 
     def add_pass(self):
-        connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-                                      password=FSTR_DB_PASS,
-                                      host=FSTR_DB_HOST,
-                                      port=FSTR_DB_PORT,
-                                      database=FSTR_DB_NAME)
+
+        connection = connect_db()
+
         with connection:
             with connection.cursor() as cursor:
                 # Проверка, если ли юзер в базе данных
@@ -96,11 +103,8 @@ class Response(BaseModel):
 
 
 def pass_details(pass_id):
-    connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-                                  password=FSTR_DB_PASS,
-                                  host=FSTR_DB_HOST,
-                                  port=FSTR_DB_PORT,
-                                  database=FSTR_DB_NAME)
+    connection = connect_db()
+
     with connection:
         with connection.cursor() as cursor:
             cursor.execute('''SELECT beauty_title, title, other_titles, title_connect, data_added, status, level_winter,
@@ -117,11 +121,8 @@ def pass_details(pass_id):
 
 
 def get_pass(pass_id):
-    connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-                                  password=FSTR_DB_PASS,
-                                  host=FSTR_DB_HOST,
-                                  port=FSTR_DB_PORT,
-                                  database=FSTR_DB_NAME)
+    connection = connect_db()
+
     with connection:
         with connection.cursor() as cursor:
             cursor.execute('''SELECT users.name, users.email, users.phone FROM users, passes WHERE 
@@ -148,11 +149,8 @@ class PassOptional(Pass):
     __annotations__ = {k: Optional[v] for k, v in Pass.__annotations__.items()}
 
     def update_pass(self, pass_id):
-        connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-                                      password=FSTR_DB_PASS,
-                                      host=FSTR_DB_HOST,
-                                      port=FSTR_DB_PORT,
-                                      database=FSTR_DB_NAME)
+        connection = connect_db()
+
         with connection:
             with connection.cursor() as cursor:
                 cursor.execute('''UPDATE passes SET beauty_title=%s, title=%s, other_titles=%s, title_connect=%s,
@@ -172,11 +170,8 @@ class ResponseUpdate(BaseModel):
 
 
 def get_user_passes(user_email):
-    connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-                                  password=FSTR_DB_PASS,
-                                  host=FSTR_DB_HOST,
-                                  port=FSTR_DB_PORT,
-                                  database=FSTR_DB_NAME)
+    connection = connect_db()
+
     with connection:
         with connection.cursor() as cursor:
             cursor.execute('''SELECT passes.beauty_title, passes.title, passes.other_titles, passes.title_connect, 
