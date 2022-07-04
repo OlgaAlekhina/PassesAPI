@@ -11,29 +11,39 @@ API реализует следующие методы:
 метод принимает JSON данные вида:
 {
   "user": {
-    "name": "string",
-    "email": "string",
-    "phone": "string"
+    "name": "Anna",
+    "email": "anna@mail.ru",
+    "phone": "555-55-55"
   },
   "passes": {
-    "beauty_title": "string",
-    "title": "string",
+    "beauty_title": "pass",
+    "title": "Anna",
     "other_titles": "string",
     "title_connect": "string",
-    "data_added": "2022-07-01T19:53:29.691Z",
-    "level_winter": "string",
+    "data_added": "2022-07-04T11:49:01.127Z",
+    "level_winter": "hard",
     "level_spring": "string",
-    "level_summer": "string",
+    "level_summer": "easy",
     "level_autumn": "string",
-    "latitude": 0,
-    "longitude": 0,
-    "height": 0
+    "latitude": 35,
+    "longitude": 158,
+    "height": 3000
   },
   "images": [
     {
-      "title": "string",
+      "title": "pic1",
       "url_path": "string",
-      "data_added": "2022-07-01T19:53:29.691Z"
+      "data_added": "2022-07-04T11:49:01.127Z"
+    },
+{
+      "title": "pic2",
+      "url_path": "string",
+      "data_added": "2022-07-04T11:49:01.127Z"
+    },
+{
+      "title": "pic3",
+      "url_path": "string",
+      "data_added": "2022-07-04T11:49:01.127Z"
     }
   ]
 }
@@ -45,6 +55,7 @@ API реализует следующие методы:
 метод принимает id перевала
   
 возвращает все данные о перевале в словаре вида:
+{
 "user": {
     "name": "Olga",
     "email": "olga@mail.ru",
@@ -76,7 +87,7 @@ API реализует следующие методы:
       "data_added": "2022-07-01T20:13:25.416Z"
     }
   ]
-}'
+}
   
 3. PATCH/update/<pass_id>  для частичного редактирования данных о перевале по его id
 
@@ -95,7 +106,8 @@ API реализует следующие методы:
 принимает email пользователя
 
 возвращает список данных обо всех перевалах пользователя вида:
-[{
+[
+  {
     "beauty_title": "best",
     "title": "OlgaPass",
     "other_titles": "small",
@@ -122,4 +134,5 @@ API реализует следующие методы:
     "latitude": 578,
     "longitude":89,
     "height": 1500
-  }]
+  }
+]
