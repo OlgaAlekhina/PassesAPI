@@ -113,9 +113,7 @@ def pass_details(pass_id):
                            (pass_id,))
             columns = [column[0] for column in cursor.description]
             pass_data = cursor.fetchone()
-            if pass_data == None:
-                raise HTTPException(status_code=404, detail="Перевал не найден")
-            else:
+            if pass_data != None:
                 pass_data = dict(zip(columns, pass_data))
 
     connection.close()

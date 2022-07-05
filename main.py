@@ -41,17 +41,23 @@ def get_pass_by_id(pass_id: int):
 def update_pass_by_id(pass_id: int, passes: PassOptional):
     try:
         stored_data = pass_details(pass_id)
-        if stored_data.get("status") == "new":
-            stored_model = PassOptional(**stored_data)
-            update_data = passes.dict(exclude_unset=True)
-            updated_pass = stored_model.copy(update=update_data)
-            updated_pass.update_pass(pass_id)
-            return ResponseUpdate(state=1, message="Успешное обновление")
+        if stored_data:
+            try:
+                if stored_data.get("status") == "new":
+                    stored_model = PassOptional(**stored_data)
+                    update_data = passes.dict(exclude_unset=True)
+                    updated_pass = stored_model.copy(update=update_data)
+                    updated_pass.update_pass(pass_id)
+                    return ResponseUpdate(state=1, message="Успешное обновление")
+                else:
+                    return ResponseUpdate(state=0, message="Нельзя редактировать эту запись")
+            except:
+                return ResponseUpdate(state=0, message="Ошибка подключения к базе данных")
         else:
-            return ResponseUpdate(state=0, message="Нельзя редактировать эту запись")
+            return ResponseUpdate(state=0, message="Перевал не найден")
+
     except:
         return ResponseUpdate(state=0, message="Ошибка подключения к базе данных")
-
 
 @app.get("/passes/users/{user_email}")
 def get_passes_by_email(user_email: str):
