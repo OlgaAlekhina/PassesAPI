@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -62,3 +62,4 @@ def update_pass_by_id(pass_id: int, passes: PassOptional):
 @app.get("/passes/users/{user_email}")
 def get_passes_by_email(user_email: str):
     return get_user_passes(user_email)
+

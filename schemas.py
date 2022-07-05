@@ -173,23 +173,31 @@ class ResponseUpdate(BaseModel):
 
 
 def get_user_passes(user_email):
-    connection = connect_db()
+    try:
+        connection = connect_db()
 
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute('''SELECT passes.beauty_title, passes.title, passes.other_titles, passes.title_connect, 
-                passes.data_added, passes.level_winter, passes.level_spring, passes.level_summer, passes.level_autumn, 
-                passes.latitude, passes.longitude, passes.height FROM passes, users WHERE 
-                passes.user_id=users.id AND users.email=%s''', (user_email,))
-            columns = [column[0] for column in cursor.description]
-            rows = cursor.fetchall()
-            passes_data = []
-            for row in rows:
-                passes_dict = dict(zip(columns, row))
-                passes_data.append(passes_dict)
+    except:
+        raise HTTPException(status_code=500, detail="Ошибка подключения к базе данных")
 
-    connection.close()
-    print("Данные успешно извлечены. Соединение с базой данных закрыто")
+    else:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute('''SELECT passes.beauty_title, passes.title, passes.other_titles, passes.title_connect, 
+                    passes.data_added, passes.level_winter, passes.level_spring, passes.level_summer, passes.level_autumn, 
+                    passes.latitude, passes.longitude, passes.height FROM passes, users WHERE 
+                    passes.user_id=users.id AND users.email=%s''', (user_email,))
+                columns = [column[0] for column in cursor.description]
+                rows = cursor.fetchall()
+                if not rows:
+                    raise HTTPException(status_code=404, detail=f"Пользователь с email '{user_email}' не найден")
+                else:
+                    passes_data = []
+                    for row in rows:
+                        passes_dict = dict(zip(columns, row))
+                        passes_data.append(passes_dict)
+
+        connection.close()
+        print("Данные успешно извлечены. Соединение с базой данных закрыто")
 
     return passes_data
 
