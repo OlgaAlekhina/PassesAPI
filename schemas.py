@@ -41,7 +41,6 @@ class AddPass(BaseModel):
     images: List[Image]
 
     def add_pass(self):
-
         connection = connect_db()
 
         with connection:
@@ -76,8 +75,6 @@ class AddPass(BaseModel):
                     cursor.execute(insert_image_data, (image.title, image.url_path, image.data_added, pass_id))
 
         connection.close()
-        print("Данные успешно добавлены. Соединение с базой данных закрыто")
-
         return pass_id[0]
 
 
@@ -129,9 +126,7 @@ def get_pass(pass_id):
                     image_dict = dict(zip(columns, row))
                     image_data.append(image_dict)
         connection.close()
-        print("Данные успешно извлечены. Соединение с базой данных закрыто")
-
-    return {"user": user_data, "passes": pass_details(pass_id), "images": image_data}
+        return {"user": user_data, "passes": pass_details(pass_id), "images": image_data}
 
 
 class PassOptional(Pass):
@@ -149,7 +144,6 @@ class PassOptional(Pass):
                                 self.level_winter, self.level_spring, self.level_summer, self.level_autumn,
                                 self.latitude, self.longitude, self.height, pass_id,))
         connection.close()
-        print("Данные успешно переданы. Соединение с базой данных закрыто")
 
 
 class ResponseUpdate(BaseModel):
@@ -179,9 +173,7 @@ def get_user_passes(user_email):
                         passes_dict = dict(zip(columns, row))
                         passes_data.append(passes_dict)
         connection.close()
-        print("Данные успешно извлечены. Соединение с базой данных закрыто")
-
-    return passes_data
+        return passes_data
 
 
 

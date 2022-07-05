@@ -20,3 +20,15 @@ def connect_db():
                                       database=FSTR_DB_NAME)
     return db_connection
 
+
+def create_db():
+    connection = connect_db()
+
+    with connection:
+        with connection.cursor() as cursor:
+            with open("database.sql", mode='r') as file:
+                db_script = file.read()
+            cursor.execute(db_script)
+    connection.close()
+
+
