@@ -113,37 +113,38 @@ def pass_details(pass_id):
                            (pass_id,))
             columns = [column[0] for column in cursor.description]
             pass_data = cursor.fetchone()
-            if pass_data != None:
+            if pass_data:
                 pass_data = dict(zip(columns, pass_data))
-
     connection.close()
 
     return pass_data
 
 def get_pass(pass_id):
-    connection = connect_db()
-
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute('''SELECT users.name, users.email, users.phone FROM users, passes WHERE 
-            passes.user_id=users.id AND passes.id=%s''', (pass_id,))
-            columns = [column[0] for column in cursor.description]
-            user_data = cursor.fetchone()
-            if user_data == None:
-                raise HTTPException(status_code=404, detail="Перевал не найден")
-            else:
-                user_data = dict(zip(columns, user_data))
-            cursor.execute('''SELECT images.title, images.url_path, images.data_added FROM images, passes WHERE 
-            images.pass_id=passes.id AND passes.id=%s''', (pass_id,))
-            columns = [column[0] for column in cursor.description]
-            rows = cursor.fetchall()
-            image_data = []
-            for row in rows:
-                image_dict = dict(zip(columns, row))
-                image_data.append(image_dict)
-
-    connection.close()
-    print("Данные успешно извлечены. Соединение с базой данных закрыто")
+    try:
+        connection = connect_db()
+    except:
+        raise HTTPException(status_code=500, detail="Ошибка подключения к базе данных")
+    else:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute('''SELECT users.name, users.email, users.phone FROM users, passes WHERE 
+                passes.user_id=users.id AND passes.id=%s''', (pass_id,))
+                columns = [column[0] for column in cursor.description]
+                user_data = cursor.fetchone()
+                if not user_data:
+                    raise HTTPException(status_code=404, detail="Перевал не найден")
+                else:
+                    user_data = dict(zip(columns, user_data))
+                cursor.execute('''SELECT images.title, images.url_path, images.data_added FROM images, passes WHERE 
+                images.pass_id=passes.id AND passes.id=%s''', (pass_id,))
+                columns = [column[0] for column in cursor.description]
+                rows = cursor.fetchall()
+                image_data = []
+                for row in rows:
+                    image_dict = dict(zip(columns, row))
+                    image_data.append(image_dict)
+        connection.close()
+        print("Данные успешно извлечены. Соединение с базой данных закрыто")
 
     return {"user": user_data, "passes": pass_details(pass_id), "images": image_data}
 
@@ -162,7 +163,6 @@ class PassOptional(Pass):
                                 self.title, self.other_titles, self.title_connect, self.data_added,
                                 self.level_winter, self.level_spring, self.level_summer, self.level_autumn,
                                 self.latitude, self.longitude, self.height, pass_id,))
-
         connection.close()
         print("Данные успешно переданы. Соединение с базой данных закрыто")
 
@@ -175,10 +175,8 @@ class ResponseUpdate(BaseModel):
 def get_user_passes(user_email):
     try:
         connection = connect_db()
-
     except:
         raise HTTPException(status_code=500, detail="Ошибка подключения к базе данных")
-
     else:
         with connection:
             with connection.cursor() as cursor:
@@ -195,7 +193,6 @@ def get_user_passes(user_email):
                     for row in rows:
                         passes_dict = dict(zip(columns, row))
                         passes_data.append(passes_dict)
-
         connection.close()
         print("Данные успешно извлечены. Соединение с базой данных закрыто")
 
