@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Union, Optional
 import psycopg2
+from fastapi import HTTPException
 
 
 load_dotenv()
@@ -112,13 +113,14 @@ def pass_details(pass_id):
                            (pass_id,))
             columns = [column[0] for column in cursor.description]
             pass_data = cursor.fetchone()
-            pass_data = dict(zip(columns, pass_data))
+            if pass_data == None:
+                raise HTTPException(status_code=404, detail="Перевал не найден")
+            else:
+                pass_data = dict(zip(columns, pass_data))
 
     connection.close()
 
     return pass_data
-
-
 
 def get_pass(pass_id):
     connection = connect_db()
@@ -129,7 +131,10 @@ def get_pass(pass_id):
             passes.user_id=users.id AND passes.id=%s''', (pass_id,))
             columns = [column[0] for column in cursor.description]
             user_data = cursor.fetchone()
-            user_data = dict(zip(columns, user_data))
+            if user_data == None:
+                raise HTTPException(status_code=404, detail="Перевал не найден")
+            else:
+                user_data = dict(zip(columns, user_data))
             cursor.execute('''SELECT images.title, images.url_path, images.data_added FROM images, passes WHERE 
             images.pass_id=passes.id AND passes.id=%s''', (pass_id,))
             columns = [column[0] for column in cursor.description]
