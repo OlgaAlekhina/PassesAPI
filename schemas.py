@@ -5,30 +5,14 @@ from datetime import datetime
 from typing import List, Union, Optional
 import psycopg2
 from fastapi import HTTPException
-
-
-load_dotenv()
-
-FSTR_DB_LOGIN = os.getenv('FSTR_DB_LOGIN')
-FSTR_DB_PASS = os.getenv('FSTR_DB_PASS')
-FSTR_DB_HOST = os.getenv('FSTR_DB_HOST')
-FSTR_DB_PORT = os.getenv('FSTR_DB_PORT')
-FSTR_DB_NAME = os.getenv('FSTR_DB_NAME')
-
-
-def connect_db():
-    db_connection = psycopg2.connect(user=FSTR_DB_LOGIN,
-                                      password=FSTR_DB_PASS,
-                                      host=FSTR_DB_HOST,
-                                      port=FSTR_DB_PORT,
-                                      database=FSTR_DB_NAME)
-    return db_connection
+from db_connection import connect_db
 
 
 class User(BaseModel):
     name: str
     email: str
     phone: str = None
+
 
 class Pass(BaseModel):
     beauty_title: str
@@ -66,7 +50,7 @@ class AddPass(BaseModel):
                 cursor.execute("SELECT id FROM users WHERE email=%s", (self.user.email,))
                 user_id = cursor.fetchone()
 
-                if user_id == None:
+                if not user_id:
                     # Вставить данные в таблицу Users
                     insert_user_data = "INSERT INTO users (name, email, phone) VALUES (%s, %s, %s) RETURNING id;"
                     cursor.execute(insert_user_data, (self.user.name, self.user.email, self.user.phone))
@@ -86,7 +70,7 @@ class AddPass(BaseModel):
                 # Получить id перевала
                 pass_id = cursor.fetchone()
 
-                #Вставить данные в таблицу Images
+                # Вставить данные в таблицу Images
                 for image in self.images:
                     insert_image_data = "INSERT INTO images (title, url_path, data_added, pass_id) VALUES (%s, %s, %s, %s);"
                     cursor.execute(insert_image_data, (image.title, image.url_path, image.data_added, pass_id))
@@ -118,6 +102,7 @@ def pass_details(pass_id):
     connection.close()
 
     return pass_data
+
 
 def get_pass(pass_id):
     try:
