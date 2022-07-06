@@ -1,9 +1,6 @@
-import os
-from dotenv import load_dotenv
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Union, Optional
-import psycopg2
 from fastapi import HTTPException
 from db_connection import connect_db
 
